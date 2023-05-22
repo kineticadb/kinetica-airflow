@@ -16,8 +16,8 @@ The `airflow-provider-kinetica` package provides a SQL operator and hook for Kin
 
 Features included in this package are:
 
-* Airflow hook KineticaSqlHook
-* Airflow operator KineticaSqlOperator
+* Airflow hook `KineticaSqlHook`
+* Airflow operator `KineticaSqlOperator`
 * Custom connection type with customized connection UI.
 
 Relevant files are:
@@ -27,7 +27,7 @@ Relevant files are:
 | [kinetica_provider/get_provider_info.py](kinetica_provider/get_provider_info.py) | Provider info                       |
 | [example_dags/kinetica_sql_example.py](example_dags/kinetica_sql_example.py)     | Example DAG with operator and hook. |
 | [kinetica_provider/operator/sql.py](kinetica_provider/operator/sql.py)           | Contains KineticaSqlHook            |
-| [kinetica_provider/hooks/sql.py](kinetica_provider/operator/sql.py)              | Contains KineticaSqlOperator        |
+| [kinetica_provider/hooks/sql.py](kinetica_provider/hooks/sql.py)                 | Contains KineticaSqlOperator        |
 
 ## 1.2. Installation
 
@@ -48,7 +48,7 @@ $ airflow connections add 'kinetica_default' \
     --conn-type 'kinetica' \
     --conn-login 'admin' \
     --conn-password '???'  \
-    --conn-host 'http://g-p100-300-301-u29.tysons.kinetica.com:9191/'
+    --conn-host 'http://hostname:9191/'
 ```
 
 ## 2. Testing 
