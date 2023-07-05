@@ -14,7 +14,7 @@ from airflow.utils.log.logging_mixin import LoggingMixin
 import logging
 from airflow.utils.strings import to_boolean
 
-from gpudb import ( GPUdb, GPUdbException )
+from gpudb import ( GPUdb, GPUdbException, GPUdbRecord )
 
 class KineticaConnection(GPUdb):
     """
@@ -42,35 +42,55 @@ class KineticaCursor(LoggingMixin):
 
     @staticmethod
     def execute_sql(kdbc: KineticaConnection, sql_statement: str) -> Any:
-        response = kdbc.execute_sql(sql_statement)
-
+        response = kdbc.execute_sql_and_decode(sql_statement, get_column_major=False)
         if(response.status_info['status'] != 'OK'):
             raise ValueError(f"SQL statement failed: {response.status_info['message']}")
-
-        kdbc.log.info(f"SQL completed (rows={response.count_affected}, time={response.status_info['response_time']})")
+        kdbc.log.info(f"SQL completed (rows={response.total_number_of_records}, time={response.status_info['response_time']})")
+        kdbc.log.info(f"SQL response {response})")
         return response
+    
 
     def __init__(self, kdbc: KineticaConnection, *args, **kwargs) -> None:
         self.kdbc: KineticaConnection = kdbc
-        self.rowcount: int = 0
+        self.rowcount: int = -1
         self.description: Sequence[Column] = None
+        self._records = None
         super().__init__(*args, **kwargs)
+
 
     def close(self) -> None:
         # do nothing
         pass
 
-    def execute(self, sql_statement: str) -> None:
+
+    def execute(self, sql_statement: str) -> list:
+        response = KineticaCursor.execute_sql(self.kdbc, sql_statement)
+        self.rowcount = response.total_number_of_records
+
         #self.description = [ Column('result', Integer) ]
-        KineticaCursor.execute_sql(self.kdbc, sql_statement)
+        # this is a hack but fortunately most operators don't check the types.
+        self.description = True
+
+        self._records = response.records
+
     
     def fetchall(self) -> list[tuple] | None:
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        if(self.rowcount < 0):
+            return None
+        return [ list(rec.values()) for rec in self._records]
+
+
+    def fetchone(self) -> tuple | None:
+        if(self.rowcount != 1):
+            raise ValueError(f"Query should return one record. Got: {self.rowcount}")
+        return self.fetchall()[0]
 
 def _try_to_boolean(value: Any):
     if isinstance(value, (str, type(None))):
         return to_boolean(value)
     return value
+
 
 class KineticaSqlHook(DbApiHook):
     """
@@ -88,6 +108,7 @@ class KineticaSqlHook(DbApiHook):
             "timeout": StringField(lazy_gettext("Timeout"), widget=BS3TextFieldWidget(), description="Connection timeout in milliseconds"),
             "disable_auto_discovery": BooleanField(label=lazy_gettext("Disable Auto Discovery"), description="Don't get other connection URL's"),
             "disable_failover": BooleanField(label=lazy_gettext("Disable Failover"), description="Don't failover if HA is enabled."),
+            "enable_driver_log": BooleanField(label=lazy_gettext("Enable Driver Log"), description="More detailed logging from the driver."),
         }
 
     @staticmethod
@@ -101,7 +122,8 @@ class KineticaSqlHook(DbApiHook):
             "placeholders": { },
             "disable_auto_discovery" : "Disable Auto Discovery",
             "disable_failover" : "Disable Failover",
-            "timeout" : "Connection Timeout"
+            "timeout" : "Connection Timeout",
+            "enable_driver_log" : "Enable Driver Log"
         }
 
     @staticmethod
@@ -142,6 +164,10 @@ class KineticaSqlHook(DbApiHook):
         dict_val = extra_dict.get("timeout")
         if dict_val is not None:
             opts.timeout = dict_val
+
+        dict_val = extra_dict.get("enable_driver_log")
+        if dict_val is not None:
+            opts.logging_level = "info"
 
         opts.username = conn.login
         opts.password = conn.password

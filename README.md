@@ -1,16 +1,16 @@
-# Kinetica Provider for Apache Airflow
+# 1. Kinetica Provider for Apache Airflow
 
 The `airflow-provider-kinetica` package provides a SQL operator and hook for Kinetica.
 
 - [1. Overview](#1-overview)
-- [1.2. Installation](#12-installation)
-- [2. Testing](#2-testing)
-    - [2.1. Configure Conda environment](#21-configure-conda-environment)
-    - [2.2. Install Airflow](#22-install-airflow)
-    - [2.3. Start Airflow in Standalone mode](#23-start-airflow-in-standalone-mode)
-    - [2.4. Install the package in editable mode.](#24-install-the-package-in-editable-mode)
-- [3. Building](#3-building)
-- [4. See Also](#4-see-also)
+- [2. Installation](#2-installation)
+- [3. Testing](#3-testing)
+  - [3.1. Configure Conda environment](#31-configure-conda-environment)
+  - [3.2. Install Airflow](#32-install-airflow)
+  - [3.3. Start Airflow in Standalone mode](#33-start-airflow-in-standalone-mode)
+  - [3.4. Install the package in editable mode.](#34-install-the-package-in-editable-mode)
+- [4. Building](#4-building)
+- [5. See Also](#5-see-also)
 
 ## 1. Overview
 
@@ -29,7 +29,7 @@ Relevant files are:
 | [kinetica_provider/operator/sql.py](kinetica_provider/operator/sql.py)           | Contains KineticaSqlHook            |
 | [kinetica_provider/hooks/sql.py](kinetica_provider/hooks/sql.py)                 | Contains KineticaSqlOperator        |
 
-## 1.2. Installation
+## 2. Installation
 
 This step assumes that you have an existing distribution of the package. If not then you will need to follow the steps in [3. Building](#3-building).
 
@@ -51,11 +51,11 @@ $ airflow connections add 'kinetica_default' \
     --conn-host 'http://hostname:9191/'
 ```
 
-## 2. Testing 
+## 3. Testing 
 
 This section explains how to setup an environment used for build and test.
 
-### 2.1. Configure Conda environment
+### 3.1. Configure Conda environment
 
 To run Airflow we need a specific version of python with its dependencies and so we will use miniconda. 
 
@@ -76,7 +76,7 @@ After installing make sure you are in the `base` conda environment. Next we crat
 (airflow) [~]$ 
 ```
 
-### 2.2. Install Airflow
+### 3.2. Install Airflow
 
 These steps will show how to configure a [standalone Airflow environment][STANDALONE]. 
 
@@ -101,7 +101,7 @@ Install the Airflow package.
 (airflow) [~]$ pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
 ```
 
-### 2.3. Start Airflow in Standalone mode
+### 3.3. Start Airflow in Standalone mode
 
 You must provide a location that will be used for the `$AIRFLOW_HOME`. We set this in the conda environment.
 
@@ -132,7 +132,7 @@ standalone | Airflow Standalone is for development purposes only. Do not use thi
 
 You can edit the `airflow.cfg` file if you need to change any ports.
 
-### 2.4. Install the package in editable mode.
+### 3.4. Install the package in editable mode.
 
 When a package is installed for edit the contents of the specified directory get registered with the python environment. This allows for changes to be made without the need for reinstalling.
 
@@ -149,7 +149,7 @@ Now you can restart airflow to see the installed provider. Uninstall the package
 (airflow) [airflow-provider-kinetica]$ python setup.py develop --uninstall
 ```
 
-## 3. Building
+## 4. Building
 
 The conda environment created for testing can also be used for building. You will need the buil package.
 
@@ -175,8 +175,9 @@ airflow-provider-kinetica-1.0.0.tar.gz
 (airflow) [airflow-provider-kinetica]$ pip install ./dist/airflow_provider_kinetica-1.0.0-py3-none-any.whl
 ```
 
-## 4. See Also
+## 5. See Also
 
+* [Airflow Quickstart](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
 * [Kinetica Python API](https://docs.kinetica.com/7.1/api/python/)
 * [Managing Connections](https://airflow.incubator.apache.org/docs/apache-airflow/stable/howto/connection.html)
 * [SQL Operators](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html)

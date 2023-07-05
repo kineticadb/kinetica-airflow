@@ -7,6 +7,7 @@ from textwrap import dedent
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.models.baseoperator import chain
+from airflow.providers.common.sql.operators.sql import SQLTableCheckOperator
 from kinetica_provider.operator.sql import KineticaSqlOperator
 from kinetica_provider.hooks.sql import KineticaSqlHook
 
@@ -30,6 +31,7 @@ def kinetica_sql_example():
     ```
     $ airflow tasks test kinetica_sql_example kinetica_sql_ddl
     $ airflow tasks test kinetica_sql_example kinetica_sql_multi_line
+    $ airflow tasks test kinetica_sql_example kinetica_table_check
     $ airflow tasks test kinetica_sql_example kinetica_sql_hook
     ```
     """
@@ -38,45 +40,43 @@ def kinetica_sql_example():
         doc_md='Demonstrate DDL with templating.',
         task_id="kinetica_sql_ddl",
         sql='''
-            CREATE OR REPLACE TABLE "{{ params.schema }}"."nyctaxi"
-            (
-                "vendor_id" VARCHAR (4) NOT NULL,
-                "pickup_datetime" TIMESTAMP NOT NULL,
-                "dropoff_datetime" TIMESTAMP NOT NULL,
-                "passenger_count" TINYINT NOT NULL,
-                "trip_distance" REAL NOT NULL,
-                "pickup_longitude" REAL NOT NULL,
-                "pickup_latitude" REAL NOT NULL,
-                "rate_code_id" SMALLINT NOT NULL,
-                "store_and_fwd_flag" VARCHAR (1) NOT NULL,
-                "dropoff_longitude" REAL NOT NULL,
-                "dropoff_latitude" REAL NOT NULL,
-                "payment_type" VARCHAR (16) NOT NULL,
-                "fare_amount" REAL NOT NULL,
-                "surcharge" REAL NOT NULL,
-                "mta_tax" REAL NOT NULL,
-                "tip_amount" REAL NOT NULL,
-                "tolls_amount" REAL NOT NULL,
-                "total_amount" REAL NOT NULL,
-                "cab_type" TINYINT NOT NULL
-            )
-            TIER STRATEGY (
-            ( ( VRAM 1, RAM 5, PERSIST 5 ) )
-            );
+        create or replace table "{{ params.schema }}"."airflow_test"
+        (
+            "dt" DATE (dict) NOT NULL,
+            "str_val" VARCHAR (32, primary_key) NOT NULL,
+            "int_val" integer NOT NULL
+        )
         ''',
-        split_statements=True,
-        return_last=False
+        split_statements=False,
+        return_last=False,
+        show_return_value_in_logs=True
     )
 
     kinetica_sql_multi_line = KineticaSqlOperator(
         doc_md='Demonstrate multi-line SQL',
         task_id="kinetica_sql_multi_line",
         sql='''
-            SELECT 1; 
+            insert into /* ki_hint_update_on_existing_pk */ "{{ params.schema }}"."airflow_test" 
+            values( DATE('2023-07-04'), 'val', 1);
             SELECT '{{ ds }}';
         ''',
         split_statements=True,
-        return_last=False
+        return_last=False,
+        show_return_value_in_logs=True
+    )
+
+    kinetica_table_check = SQLTableCheckOperator(
+        doc_md='''
+        Verify table contents.
+        See [Airflow Docs](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html#check-sql-table-values).
+        ''',
+        task_id="kinetica_table_check",
+        table = '"{{ params.schema }}"."airflow_test"',
+        checks = {
+            "row_count_check": { "check_statement": "COUNT(*) = 1" }
+        },
+        partition_clause = None,
+        conn_id = "kinetica_default"
     )
 
     @task
@@ -94,37 +94,21 @@ def kinetica_sql_example():
         #    TLOG.info(f"Param {key}: {value}")
 
         kinetica_hook = KineticaSqlHook()
-        kdbc = kinetica_hook.get_conn()
+        status, message = kinetica_hook.test_connection()
+        TLOG.info(f"test_connection {status}: {message}")
 
-        KineticaSqlHook.execute_sql(kdbc, f'''\
-            CREATE OR REPLACE TABLE "{ params['schema'] }"."nyctaxi"
-            (
-                "vendor_id" VARCHAR (4) NOT NULL,
-                "pickup_datetime" TIMESTAMP NOT NULL,
-                "dropoff_datetime" TIMESTAMP NOT NULL,
-                "passenger_count" TINYINT NOT NULL,
-                "trip_distance" REAL NOT NULL,
-                "pickup_longitude" REAL NOT NULL,
-                "pickup_latitude" REAL NOT NULL,
-                "rate_code_id" SMALLINT NOT NULL,
-                "store_and_fwd_flag" VARCHAR (1) NOT NULL,
-                "dropoff_longitude" REAL NOT NULL,
-                "dropoff_latitude" REAL NOT NULL,
-                "payment_type" VARCHAR (16) NOT NULL,
-                "fare_amount" REAL NOT NULL,
-                "surcharge" REAL NOT NULL,
-                "mta_tax" REAL NOT NULL,
-                "tip_amount" REAL NOT NULL,
-                "tolls_amount" REAL NOT NULL,
-                "total_amount" REAL NOT NULL,
-                "cab_type" TINYINT NOT NULL
-            )
-            TIER STRATEGY (
-            ( ( VRAM 1, RAM 5, PERSIST 5 ) )
-            );
+        sql_result = kinetica_hook.get_first(f'''\
+            select * from "{ params['schema'] }"."airflow_test";
         ''')
+        TLOG.info(f"get_first: {sql_result}")
+
+        sql_result = kinetica_hook.get_records(f'''\
+            select * from "{ params['schema'] }"."airflow_test";
+        ''')
+        TLOG.info(f"get_records: {sql_result}")
+
 
     #kinetica_sql_ddl >> kinetica_sql_multi_line >> kinetica_sql_hook()
-    chain(kinetica_sql_ddl, kinetica_sql_multi_line, kinetica_sql_hook())
+    chain(kinetica_sql_ddl, kinetica_sql_multi_line, kinetica_table_check, kinetica_sql_hook())
 
 dag = kinetica_sql_example()
