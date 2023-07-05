@@ -29,39 +29,40 @@ def kinetica_sql_example():
     You can run the DAG directly from the web UI or you can execute tasks independently:
     
     ```
-    $ airflow tasks test kinetica_sql_example kinetica_sql_ddl
     $ airflow tasks test kinetica_sql_example kinetica_sql_multi_line
+    $ airflow tasks test kinetica_sql_example kinetica_sql_single_line
     $ airflow tasks test kinetica_sql_example kinetica_table_check
     $ airflow tasks test kinetica_sql_example kinetica_sql_hook
     ```
     """
 
-    kinetica_sql_ddl = KineticaSqlOperator(
+    kinetica_sql_multi_line = KineticaSqlOperator(
         doc_md='Demonstrate DDL with templating.',
-        task_id="kinetica_sql_ddl",
+        task_id="kinetica_sql_multi_line",
         sql='''
         create or replace table "{{ params.schema }}"."airflow_test"
         (
             "dt" DATE (dict) NOT NULL,
             "str_val" VARCHAR (32, primary_key) NOT NULL,
             "int_val" integer NOT NULL
-        )
+        );
+        insert into "{{ params.schema }}"."airflow_test" 
+        values( DATE('2023-07-04'), 'val', 1);
         ''',
-        split_statements=False,
+        split_statements=True,
         return_last=False,
         show_return_value_in_logs=True
     )
 
-    kinetica_sql_multi_line = KineticaSqlOperator(
-        doc_md='Demonstrate multi-line SQL',
-        task_id="kinetica_sql_multi_line",
+    kinetica_sql_single_line = KineticaSqlOperator(
+        doc_md='Demonstrate SQL single line with hint.',
+        task_id="kinetica_sql_single_line",
         sql='''
-            insert into /* ki_hint_update_on_existing_pk */ "{{ params.schema }}"."airflow_test" 
-            values( DATE('2023-07-04'), 'val', 1);
-            SELECT '{{ ds }}';
+        insert into /* ki_hint_update_on_existing_pk */ "{{ params.schema }}"."airflow_test" 
+            values( DATE('2023-07-04'), 'val', 2);
         ''',
-        split_statements=True,
-        return_last=False,
+        split_statements=False,
+        return_last=True,
         show_return_value_in_logs=True
     )
 
@@ -109,6 +110,6 @@ def kinetica_sql_example():
 
 
     #kinetica_sql_ddl >> kinetica_sql_multi_line >> kinetica_sql_hook()
-    chain(kinetica_sql_ddl, kinetica_sql_multi_line, kinetica_table_check, kinetica_sql_hook())
+    chain(kinetica_sql_single_line, kinetica_sql_multi_line, kinetica_table_check, kinetica_sql_hook())
 
 dag = kinetica_sql_example()
