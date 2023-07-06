@@ -11,10 +11,10 @@ from sqlalchemy import Boolean, Column, Integer, String, Text
 from airflow.models.connection import Connection
 from airflow.providers.common.sql.hooks.sql import DbApiHook
 from airflow.utils.log.logging_mixin import LoggingMixin
-import logging
+import sqlparse
 from airflow.utils.strings import to_boolean
 
-from gpudb import ( GPUdb, GPUdbException, GPUdbRecord )
+from gpudb import ( GPUdb, GPUdbException )
 
 class KineticaConnection(GPUdb):
     """
@@ -40,16 +40,6 @@ class KineticaCursor(LoggingMixin):
     Cursor class to provide support for [PEP-0249](https://peps.python.org/pep-0249/) compliant connection.
     """
 
-    @staticmethod
-    def execute_sql(kdbc: KineticaConnection, sql_statement: str) -> Any:
-        response = kdbc.execute_sql_and_decode(sql_statement, get_column_major=False)
-        if(response.status_info['status'] != 'OK'):
-            raise ValueError(f"SQL statement failed: {response.status_info['message']}")
-        kdbc.log.info(f"SQL completed (rows={response.total_number_of_records}, time={response.status_info['response_time']})")
-        kdbc.log.info(f"SQL response {response})")
-        return response
-    
-
     def __init__(self, kdbc: KineticaConnection, *args, **kwargs) -> None:
         self.kdbc: KineticaConnection = kdbc
         self.rowcount: int = -1
@@ -64,32 +54,31 @@ class KineticaCursor(LoggingMixin):
 
 
     def execute(self, sql_statement: str) -> list:
-        response = KineticaCursor.execute_sql(self.kdbc, sql_statement)
-        self.rowcount = response.total_number_of_records
+        response = self.kdbc.execute_sql_and_decode(sql_statement, get_column_major=False)
+        if(response.status_info['status'] != 'OK'):
+            raise ValueError(f"SQL statement failed: {response.status_info['message']}")
+        
+        self.kdbc.log.info(f"SQL completed (rows={response.total_number_of_records}, time={response.status_info['response_time']})")
+        self.kdbc.log.info(f"SQL response {response})")
 
         #self.description = [ Column('result', Integer) ]
         # this is a hack but fortunately most operators don't check the types.
         self.description = True
 
+        self.rowcount = response.total_number_of_records
         self._records = response.records
 
     
     def fetchall(self) -> list[tuple] | None:
-        #raise NotImplementedError()
         if(self.rowcount < 0):
             return None
-        return [ list(rec.values()) for rec in self._records]
+        return [ tuple(rec.values()) for rec in self._records]
 
 
     def fetchone(self) -> tuple | None:
         if(self.rowcount != 1):
             raise ValueError(f"Query should return one record. Got: {self.rowcount}")
         return self.fetchall()[0]
-
-def _try_to_boolean(value: Any):
-    if isinstance(value, (str, type(None))):
-        return to_boolean(value)
-    return value
 
 
 class KineticaSqlHook(DbApiHook):
@@ -126,12 +115,6 @@ class KineticaSqlHook(DbApiHook):
             "enable_driver_log" : "Enable Driver Log"
         }
 
-    @staticmethod
-    def execute_sql(kdbc: KineticaConnection, sql_statement: str) -> None:
-        sql_statement_d = dedent(sql_statement)
-        kdbc.log.info(f"Executing SQL... {sql_statement_d}")
-        return KineticaCursor.execute_sql(kdbc, sql_statement)
-
     conn_name_attr = "kinetica_conn_id"
     default_conn_name = "kinetica_default"
     conn_type = "kinetica"
@@ -145,6 +128,20 @@ class KineticaSqlHook(DbApiHook):
         super().__init__(*args, **kwargs)
 
 
+    @staticmethod
+    def split_sql_string(sql: str) -> list[str]:
+        # workaround: override this in the base class to avoid strip_comments
+        splits = sqlparse.split(sqlparse.format(sql, strip_comments=False))
+        return [s for s in splits if s]
+    
+
+    @staticmethod
+    def _try_to_boolean(value: Any):
+        if isinstance(value, (str, type(None))):
+            return to_boolean(value)
+        return value
+    
+
     def get_conn(self) -> KineticaConnection:
         conn: Connection = self.get_connection(getattr(self, self.conn_name_attr))
         
@@ -155,11 +152,11 @@ class KineticaSqlHook(DbApiHook):
 
         dict_val = extra_dict.get("disable_auto_discovery")
         if dict_val is not None:
-            opts.disable_auto_discovery = _try_to_boolean(dict_val)
+            opts.disable_auto_discovery = self._try_to_boolean(dict_val)
 
         dict_val = extra_dict.get("disable_failover")
         if dict_val is not None:
-            opts.disable_failover = _try_to_boolean(dict_val)
+            opts.disable_failover = self._try_to_boolean(dict_val)
 
         dict_val = extra_dict.get("timeout")
         if dict_val is not None:

@@ -30,7 +30,9 @@ def kinetica_sql_example():
     
     ```
     $ airflow tasks test kinetica_sql_example kinetica_sql_multi_line
+    $ airflow tasks test kinetica_sql_example kinetica_sql_multi_line_insert
     $ airflow tasks test kinetica_sql_example kinetica_sql_single_line
+    $ airflow tasks test kinetica_sql_example kinetica_sql_xcom_push
     $ airflow tasks test kinetica_sql_example kinetica_table_check
     $ airflow tasks test kinetica_sql_example kinetica_sql_hook
     ```
@@ -54,14 +56,27 @@ def kinetica_sql_example():
         show_return_value_in_logs=True
     )
 
+    kinetica_sql_multi_line_insert = KineticaSqlOperator(
+        doc_md='Demonstrate SQL multi-line with hint.',
+        task_id="kinetica_sql_multi_line_insert",
+        sql='''
+        insert into /* ki_hint_update_on_existing_pk */ "{{ params.schema }}"."airflow_test" 
+            values( DATE('2023-07-04'), 'val', 2);
+        select count(1) from "{{ params.schema }}"."airflow_test";
+        ''',
+        split_statements=True, 
+        return_last=True,
+        show_return_value_in_logs=True
+    )
+
     kinetica_sql_single_line = KineticaSqlOperator(
-        doc_md='Demonstrate SQL single line with hint.',
+        doc_md='Demonstrate SQL single-line with hint.',
         task_id="kinetica_sql_single_line",
         sql='''
         insert into /* ki_hint_update_on_existing_pk */ "{{ params.schema }}"."airflow_test" 
             values( DATE('2023-07-04'), 'val', 2);
         ''',
-        split_statements=False,
+        split_statements=False, 
         return_last=True,
         show_return_value_in_logs=True
     )
@@ -110,6 +125,11 @@ def kinetica_sql_example():
 
 
     #kinetica_sql_ddl >> kinetica_sql_multi_line >> kinetica_sql_hook()
-    chain(kinetica_sql_single_line, kinetica_sql_multi_line, kinetica_table_check, kinetica_sql_hook())
+    chain(
+        kinetica_sql_multi_line, 
+        kinetica_sql_multi_line_insert, 
+        kinetica_sql_single_line,
+        kinetica_table_check, 
+        kinetica_sql_hook())
 
 dag = kinetica_sql_example()
