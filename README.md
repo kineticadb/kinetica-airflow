@@ -151,7 +151,10 @@ Now you can restart airflow to see the installed provider. Uninstall the package
 
 ## 4. Building
 
-The conda environment created for testing can also be used for building. You will need the buil package.
+The conda environment created for testing can also be used for building. You will need the [build][BUILD] package.
+
+
+[BUILD]: <https://pypa-build.readthedocs.io/en/latest/index.html> "Python Build Utility"
 
 ```sh
 (airflow) [~]$ pip install build
@@ -166,7 +169,7 @@ From the location of the provider execute the build process.
 Successfully built airflow-provider-kinetica-1.0.0.tar.gz and airflow_provider_kinetica-1.0.0-py3-none-any.whl
 ```
 
-It will create a "wheel" distribution package and you can use this to install the provider.
+It will create a "wheel" distribution package and you can use this to install the provider. If you have an editable version of the provider from the above section you should uninstall it first.
 
 ```sh
 (airflow) [airflow-provider-kinetica]$ ls -1 ./dist
@@ -177,9 +180,19 @@ airflow-provider-kinetica-1.0.0.tar.gz
 
 ## 5. See Also
 
-* [Airflow Quickstart](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
+**Kinetica Docs**
+
 * [Kinetica Python API](https://docs.kinetica.com/7.1/api/python/)
-* [Managing Connections](https://airflow.incubator.apache.org/docs/apache-airflow/stable/howto/connection.html)
-* [SQL Operators](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html)
 * [Kinetica SQL](https://docs.kinetica.com/7.1/sql/)
+
+**Airflow Docs**
+
+* [Airflow Quickstart](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
+* [Managing Connections](https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html)
+* [SQL Operators](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html)
+
+**Building a Provider**
+
 * [Airflow Provider Sample](https://github.com/astronomer/airflow-provider-sample)
+* [Python Build Module](https://pypa-build.readthedocs.io/en/latest/index.html)
+* [Setuptools Wheels](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#wheels)
