@@ -22,4 +22,4 @@ class KineticaSqlOperator(SQLExecuteQueryOperator):
         super().__init__(conn_id=kinetica_conn_id, **kwargs)
 
     def get_db_hook(self) -> KineticaSqlHook:
-        return KineticaSqlHook()
+        return KineticaSqlHook(kinetica_conn_id=self.conn_id)
