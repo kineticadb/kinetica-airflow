@@ -11,9 +11,9 @@ class KineticaSqlOperator(SQLExecuteQueryOperator):
     Executes SQL code in a Kinetica database.
     """
 
-    template_fields: Sequence[str] = ("sql",)
+    template_fields: Sequence[str] = ("sql","parameters")
     template_ext: Sequence[str] = (".sql",)
-    template_fields_renderers = {"sql": "sql"}
+    template_fields_renderers = {"sql": "sql", "parameters": "json"}
     
     ui_color = "#562da2"
     ui_fgcolor = "#FFFFFF"

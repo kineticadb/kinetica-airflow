@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 from textwrap import dedent
 from sqlalchemy import Boolean, Column, Integer, String, Text
 
@@ -53,7 +53,9 @@ class KineticaCursor(LoggingMixin):
         pass
 
 
-    def execute(self, sql_statement: str) -> list:
+    def execute(self, sql_statement: str, parameters: Optional[dict[str, str]] = None) -> list:
+        if parameters is not None:
+            sql_statement = sql_statement.format(**parameters)
         response = self.kdbc.execute_sql_and_decode(sql_statement, get_column_major=False)
         if(response.status_info['status'] != 'OK'):
             raise ValueError(f"SQL statement failed: {response.status_info['message']}")
