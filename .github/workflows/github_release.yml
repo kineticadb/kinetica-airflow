@@ -4,15 +4,13 @@ name: Release to Github
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 
 jobs:
   build: 
     name: Create Distribution
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
   
   github-release:
     name: Upload them to GitHub Release
