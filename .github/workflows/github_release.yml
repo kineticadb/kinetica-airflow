@@ -2,9 +2,8 @@
 name: Release to Github
 
 on:
-  push:
-    tags:
-      - V*
+  release:
+    types: [published]
 
 jobs:
   build:
