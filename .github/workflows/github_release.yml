@@ -9,8 +9,7 @@ jobs:
 
   github-release:
     name: >-
-      Sign the Python 🐍 distribution 📦 with Sigstore
-      and upload them to GitHub Release
+      Upload them to GitHub Release
     # only publish to PyPI on tag pushes
     #if: startsWith(github.ref, 'refs/tags/')  
     # needs:
@@ -42,9 +41,9 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       run: >-
         gh release 
-          create '${{ github.ref_name }}' 
-          --repo '${{ github.repository }}' 
-          --notes ""
+        create '${{ github.ref_name }}' 
+        --repo '${{ github.repository }}' 
+        --notes ""
 
     - name: Upload artifact signatures to GitHub Release
       env:
@@ -54,5 +53,5 @@ jobs:
       # sigstore-produced signatures and certificates.
       run: >-
         gh release 
-          upload '${{ github.ref_name }}' dist/** 
-          --repo '${{ github.repository }}'
+        upload '${{ github.ref_name }}' dist/** 
+        --repo '${{ github.repository }}'
