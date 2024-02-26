@@ -24,8 +24,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: ./.github/workflows/build.yml
-
     - name: Download all the dists
       uses: actions/download-artifact@v3
       with:
