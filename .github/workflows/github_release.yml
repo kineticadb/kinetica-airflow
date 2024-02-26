@@ -6,8 +6,6 @@ on:
     types: [published]
 
 jobs:
-  build:
-    uses: ./.github/workflows/build.yml
 
   github-release:
     name: >-
@@ -24,6 +22,7 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for sigstore
 
     steps:
+    - uses: .github/workflows/build.yml
 
     - name: Download all the dists
       uses: actions/download-artifact@v3
