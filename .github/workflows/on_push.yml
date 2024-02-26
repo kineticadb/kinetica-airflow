@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - master
-    # paths:
-    #   - 'kinetica_provider/**'
+    paths:
+      - 'kinetica_provider/**'
 
 jobs:
   build: 
