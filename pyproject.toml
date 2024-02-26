@@ -1,0 +1,42 @@
+[project]
+name = "airflow-provider-kinetica"
+version = "1.0.2"
+authors = [
+    {name = "Chad Juliano", email = "cjuliano@kinetica.com"},
+]
+description = "Kinetica Airflow provider package"
+readme = "README.md"
+requires-python = "~=3.8"
+license = {text = "MIT License"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Framework :: Apache Airflow",
+    "Framework :: Apache Airflow :: Provider",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "apache-airflow>=2.3", 
+    "gpudb",
+    "apache-airflow-providers-apache-spark"
+]
+#dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://kinetica.com"
+Documentation = "https://github.com/kineticadb/kinetica-airflow"
+Repository = "https://github.com/kineticadb/kinetica-airflow"
+
+[tool.setuptools.dynamic]
+#version = {attr = "kinetica_provider.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["kinetica_provider*"]
+
+[project.entry-points."apache_airflow_provider"]
+provider_info = "kinetica_provider.get_provider_info:get_provider_info"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
