@@ -4,17 +4,15 @@ name: Release to Github
 on:
   release:
     types: [published]
-
+  workflow_dispatch:
 
 jobs:
-  build: 
-    name: Create Distribution
+  build:
     uses: ./.github/workflows/build.yml
   
   github-release:
     name: Upload them to GitHub Release
-    # only publish to PyPI on tag pushes
-    #if: startsWith(github.ref, 'refs/tags/')  
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     permissions:

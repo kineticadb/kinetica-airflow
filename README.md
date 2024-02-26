@@ -1,5 +1,8 @@
 # 1. Kinetica Provider for Apache Airflow
 
+![GitHub Release](https://img.shields.io/github/v/release/kineticadb/kinetica-airflow?style=flat&label=Release&color=orange&link=https%3A%2F%2Fgithub.com%2Fkineticadb%2Fkinetica-airflow%2Freleases)
+[![Build Distribution](https://github.com/kineticadb/kinetica-airflow/actions/workflows/build.yml/badge.svg)](https://github.com/kineticadb/kinetica-airflow/actions/workflows/build.yml)
+
 The `airflow-provider-kinetica` package provides a SQL operator and hook for Kinetica.
 
 - [1. Overview](#1-overview)
@@ -16,9 +19,9 @@ The `airflow-provider-kinetica` package provides a SQL operator and hook for Kin
 
 Features included in this package are:
 
-* Airflow hook `KineticaSqlHook`
-* Airflow operator `KineticaSqlOperator`
-* Custom connection type with customized connection UI.
+- Airflow hook `KineticaSqlHook`
+- Airflow operator `KineticaSqlOperator`
+- Custom connection type with customized connection UI.
 
 Relevant files are:
 
@@ -31,9 +34,7 @@ Relevant files are:
 
 ## 2. Installation
 
-This step assumes that you have an existing distribution of the package. If not then you will need to follow the steps in [3. Building](#3-building).
-
-The package can be installed from the `whl` file.
+This step assumes that you have an existing `.whl` distribution of the package. You can either [build the distribution](#3-building) or download it from the assets section of the [Github release](https://github.com/kineticadb/kinetica-airflow/releases/).
 
 ```sh
 $ pip install ./dist/airflow_provider_kinetica-1.0.0-py3-none-any.whl
@@ -182,17 +183,17 @@ airflow-provider-kinetica-1.0.0.tar.gz
 
 **Kinetica Docs**
 
-* [Kinetica Python API](https://docs.kinetica.com/7.1/api/python/)
-* [Kinetica SQL](https://docs.kinetica.com/7.1/sql/)
+- [Kinetica Python API](https://docs.kinetica.com/7.1/api/python/)
+- [Kinetica SQL](https://docs.kinetica.com/7.1/sql/)
 
 **Airflow Docs**
 
-* [Airflow Quickstart](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
-* [Managing Connections](https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html)
-* [SQL Operators](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html)
+- [Airflow Quickstart](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
+- [Managing Connections](https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html)
+- [SQL Operators](https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/operators.html)
 
 **Building a Provider**
 
-* [Airflow Provider Sample](https://github.com/astronomer/airflow-provider-sample)
-* [Python Build Module](https://pypa-build.readthedocs.io/en/latest/index.html)
-* [Setuptools Wheels](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#wheels)
+- [Airflow Provider Sample](https://github.com/astronomer/airflow-provider-sample)
+- [Python Build Module](https://pypa-build.readthedocs.io/en/latest/index.html)
+- [Setuptools Wheels](https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/#wheels)
