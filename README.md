@@ -14,6 +14,7 @@ The `airflow-provider-kinetica` package provides a SQL operator and hook for Kin
   - [3.2. Install Airflow](#32-install-airflow)
   - [3.3. Start Airflow in Standalone mode](#33-start-airflow-in-standalone-mode)
   - [3.4. Install the package in editable mode](#34-install-the-package-in-editable-mode)
+  - [3.5. Example DAGs](#35-example-dags)
 - [5. See Also](#5-see-also)
   - [5.1 Kinetica Docs](#51-kinetica-docs)
   - [5.2 Airflow Docs](#52-airflow-docs)
@@ -37,6 +38,8 @@ Relevant files are:
 | [kinetica_provider/hooks/sql.py](kinetica_provider/hooks/sql.py)                 | Contains KineticaSqlOperator        |
 
 ## 2. Installation
+
+> Note: Before proceeding make sure airflow is installed according to the [offical installation docs](https://airflow.apache.org/docs/apache-airflow/stable/installation/index.html).
 
 This `airflow-provider-kinetica` is available on PyPi. You can install with:
 
@@ -164,6 +167,10 @@ Now you can restart airflow to see the installed provider. Uninstall the package
 ```sh
 (airflow) [airflow-provider-kinetica]$ python setup.py develop --uninstall
 ```
+
+### 3.5. Example DAGs
+
+Run the [example DAGs](./example_dags) to verify the installation. See the comments in the code for more details.
 
 ## 5. See Also
 
