@@ -1,6 +1,6 @@
 [project]
 name = "airflow-provider-kinetica"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
     {name = "Chad Juliano", email = "cjuliano@kinetica.com"},
 ]

@@ -168,6 +168,10 @@ class KineticaSqlHook(DbApiHook):
         if dict_val is not None:
             opts.logging_level = "info"
 
+        dict_val = extra_dict.get("skip_ssl_cert_verification")
+        if dict_val is not None:
+            opts.skip_ssl_cert_verification = self._try_to_boolean(dict_val)
+
         opts.username = conn.login
         opts.password = conn.password
 
