@@ -96,25 +96,35 @@ class KineticaSqlHook(DbApiHook):
         from wtforms import BooleanField, StringField
 
         return {
-            "timeout": StringField(lazy_gettext("Timeout"), widget=BS3TextFieldWidget(), description="Connection timeout in milliseconds"),
-            "disable_auto_discovery": BooleanField(label=lazy_gettext("Disable Auto Discovery"), description="Don't get other connection URL's"),
-            "disable_failover": BooleanField(label=lazy_gettext("Disable Failover"), description="Don't failover if HA is enabled."),
-            "enable_driver_log": BooleanField(label=lazy_gettext("Enable Driver Log"), description="More detailed logging from the driver."),
+            "timeout": 
+                StringField(lazy_gettext("Timeout"), 
+                            widget=BS3TextFieldWidget(), 
+                            description="Connection timeout in milliseconds"),
+            "disable_auto_discovery": 
+                BooleanField(label=lazy_gettext("Disable Auto Discovery"), 
+                            description="Don't get other connection URL's"),
+            "disable_failover": 
+                BooleanField(label=lazy_gettext("Disable Failover"), 
+                            description="Don't failover if HA is enabled."),
+            "skip_ssl_cert_verification": 
+                BooleanField(label=lazy_gettext("Skip SSL Verification"), 
+                            description="Don't fail if the certificate is not trusted."),
+            "enable_driver_log": 
+                BooleanField(label=lazy_gettext("Enable Driver Log"), 
+                            description="More detailed logging from the driver."),
         }
 
     @staticmethod
     def get_ui_field_behaviour() -> dict:
         """Returns custom field behaviour"""
-        import json
 
         return {
             "hidden_fields": ["schema", "extra", "port" ],
-            "relabeling": { "host" : "Kinetica URL" },
-            "placeholders": { },
-            "disable_auto_discovery" : "Disable Auto Discovery",
-            "disable_failover" : "Disable Failover",
-            "timeout" : "Connection Timeout",
-            "enable_driver_log" : "Enable Driver Log"
+            "relabeling": { 
+                "host" : "Kinetica URL",
+                "login": "Kinetica Login",
+                "password": "Kinetica password",
+            },
         }
 
     conn_name_attr = "kinetica_conn_id"
@@ -167,6 +177,10 @@ class KineticaSqlHook(DbApiHook):
         dict_val = extra_dict.get("enable_driver_log")
         if dict_val is not None:
             opts.logging_level = "info"
+
+        dict_val = extra_dict.get("skip_ssl_cert_verification")
+        if dict_val is not None:
+            opts.skip_ssl_cert_verification = self._try_to_boolean(dict_val)
 
         opts.username = conn.login
         opts.password = conn.password
