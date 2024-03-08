@@ -153,3 +153,9 @@ dmypy.json
 cython_debug/
 
 /*.code-workspace
+home/airflow-webserver.pid
+home/airflow.cfg
+home/airflow.db
+home/standalone_admin_password.txt
+home/webserver_config.py
+home/logs/scheduler/latest

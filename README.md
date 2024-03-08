@@ -12,8 +12,8 @@ The `airflow-provider-kinetica` package provides a SQL operator and hook for Kin
 - [3. Testing](#3-testing)
   - [3.1. Configure Conda environment](#31-configure-conda-environment)
   - [3.2. Install Airflow](#32-install-airflow)
-  - [3.3. Start Airflow in Standalone mode](#33-start-airflow-in-standalone-mode)
   - [3.4. Install the package in editable mode](#34-install-the-package-in-editable-mode)
+  - [3.3. Start Airflow in Standalone mode](#33-start-airflow-in-standalone-mode)
   - [3.5. Example DAGs](#35-example-dags)
 - [5. See Also](#5-see-also)
   - [5.1 Kinetica Docs](#51-kinetica-docs)
@@ -120,37 +120,6 @@ Install the Airflow package.
 (airflow) [~]$ pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
 ```
 
-### 3.3. Start Airflow in Standalone mode
-
-You must provide a location that will be used for the `$AIRFLOW_HOME`. We set this in the conda environment.
-
-```sh
-(airflow) [~]$ conda env config vars set AIRFLOW_HOME=~/fsq-airflow/airflow/standalone
-(airflow) [~]$ conda env config vars list -n airflow
-AIRFLOW_HOME = ~/fsq-airflow/airflow/standalone
-```
-
-You must re-activate the environment for the variable to get loaded.
-
-```sh
-(airflow) [~]$ conda activate airflow
-(airflow) [~]$ echo $AIRFLOW_HOME
-~/fsq-airflow/airflow/standalone
-```
-
-When you startup airflow in standalone mode it will copy files into `$AIRFLOW_HOME` if they do not already exist. When startup is complete it will show the admin and user password for the webserver.
-
-```sh
-(airflow) [~]$ cd $AIRFLOW_HOME
-(airflow) [standalone]$ airflow standalone
-[...]
-standalone | Airflow is ready
-standalone | Login with username: admin  password: 39FrRzqzRYTK3pc9
-standalone | Airflow Standalone is for development purposes only. Do not use this in production!
-```
-
-You can edit the `airflow.cfg` file if you need to change any ports.
-
 ### 3.4. Install the package in editable mode
 
 When a package is installed for edit the contents of the specified directory get registered with the python environment. This allows for changes to be made without the need for reinstalling.
@@ -167,6 +136,42 @@ Now you can restart airflow to see the installed provider. Uninstall the package
 ```sh
 (airflow) [airflow-provider-kinetica]$ python setup.py develop --uninstall
 ```
+
+You will need to create the default Kinetica connection. You can modify this in the **Admin->Connections** dialog.
+
+```
+airflow connections add 'kinetica_default' \
+    --conn-type 'kinetica' \
+    --conn-login '_default_login' \
+    --conn-password '_default_password'  \
+    --conn-host 'http://g-p100-300-301-u29.tysons.kinetica.com:9191/'
+```
+
+### 3.3. Start Airflow in Standalone mode
+
+You must provide a location that will be used for the `$AIRFLOW_HOME`. We set this in the conda environment.
+
+```sh
+(airflow) $ mkdir ./home
+(airflow) $ conda env config vars set AIRFLOW_HOME=$PWD/home
+(airflow) $ conda activate airflow
+(airflow) [home] $ echo $AIRFLOW_HOME
+~/fsq-airflow/airflow/standalone
+```
+
+When you startup airflow in standalone mode it will copy files into `$AIRFLOW_HOME` if they do not already exist. When startup is complete it will show the admin and user password for the webserver.
+
+```sh
+(airflow) [~]$ cd $AIRFLOW_HOME
+(airflow) [standalone]$ airflow standalone
+[...]
+ webserver | [2024-03-07 22:00:34 -0600] [18240] [INFO] Listening at: http://0.0.0.0:8080 (18240)
+standalone | Airflow is ready
+standalone | Login with username: admin  password: 39FrRzqzRYTK3pc9
+standalone | Airflow Standalone is for development purposes only. Do not use this in production!
+```
+
+You can edit the `airflow.cfg` file if you need to change any ports.
 
 ### 3.5. Example DAGs
 
